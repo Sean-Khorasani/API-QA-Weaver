@@ -1,0 +1,74 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.npm
+*.log
+
+# TypeScript
+*.tsbuildinfo
+dist/
+build/
+out/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+
+# Testing
+coverage/
+*.lcov
+.nyc_output
+.coverage
+htmlcov/
+.pytest_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Mock data
+*.log
+results/
+generated_tests/
+test_reports/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Build artifacts
+*.pid
+*.seed
+*.pid.lock
+
+# Documentation build
+docs/_build/
+docs/.doctrees/
+
+# Mockoon
+mockoon-cli.log
+*.mockoon.json.backup

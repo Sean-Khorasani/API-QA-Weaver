@@ -1,0 +1,119 @@
+{
+  "uuid": "analytics-service",
+  "lastMigration": 27,
+  "name": "Analytics Microservice",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3002,
+  "hostname": "0.0.0.0",
+  "routes": [
+    {
+      "uuid": "analytics-1",
+      "documentation": "Track Event",
+      "method": "post",
+      "endpoint": "events",
+      "responses": [
+        {
+          "uuid": "resp-analytics-1",
+          "body": "{\n  \"eventId\": \"{{faker 'datatype.uuid'}}\",\n  \"accepted\": true,\n  \"timestamp\": \"{{now}}\"\n}",
+          "latency": 20,
+          "statusCode": 201,
+          "label": "Success",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "rules": [],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    },
+    {
+      "uuid": "analytics-2",
+      "documentation": "Get Metrics",
+      "method": "get",
+      "endpoint": "metrics/:metric",
+      "responses": [
+        {
+          "uuid": "resp-analytics-2",
+          "body": "{\n  \"metric\": \"{{urlParam 'metric'}}\",\n  \"period\": \"{{queryParam 'period' '24h'}}\",\n  \"data\": [\n    {{#repeat 24}}\n    {\n      \"timestamp\": \"{{faker 'date.recent'}}\",\n      \"value\": {{faker 'datatype.number' min=100 max=10000}},\n      \"change\": {{faker 'datatype.float' min=-0.5 max=0.5 precision=0.01}}\n    }{{#unless @last}},{{/unless}}\n    {{/repeat}}\n  ],\n  \"summary\": {\n    \"total\": {{faker 'datatype.number' min=10000 max=100000}},\n    \"average\": {{faker 'datatype.number' min=500 max=5000}},\n    \"peak\": {{faker 'datatype.number' min=5000 max=20000}}\n  }\n}",
+          "latency": 200,
+          "statusCode": 200,
+          "label": "Success",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Cache-Control",
+              "value": "max-age=300"
+            }
+          ],
+          "rules": [],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    },
+    {
+      "uuid": "analytics-3",
+      "documentation": "Real-time Dashboard",
+      "method": "get",
+      "endpoint": "realtime",
+      "responses": [
+        {
+          "uuid": "resp-analytics-3",
+          "body": "{\n  \"activeUsers\": {{faker 'datatype.number' min=1000 max=50000}},\n  \"requestsPerSecond\": {{faker 'datatype.number' min=100 max=5000}},\n  \"errorRate\": {{faker 'datatype.float' min=0 max=0.05 precision=0.001}},\n  \"avgResponseTime\": {{faker 'datatype.number' min=50 max=500}},\n  \"topEndpoints\": [\n    {{#repeat 5}}\n    {\n      \"endpoint\": \"{{faker 'helpers.arrayElement' '[\"GET /users\", \"POST /orders\", \"GET /products\", \"POST /auth/login\", \"GET /search\"]'}}\",\n      \"count\": {{faker 'datatype.number' min=100 max=10000}},\n      \"avgTime\": {{faker 'datatype.number' min=20 max=200}}\n    }{{#unless @last}},{{/unless}}\n    {{/repeat}}\n  ]\n}",
+          "latency": 50,
+          "statusCode": 200,
+          "label": "Success",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "rules": [],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    }
+  ],
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "data": []
+}

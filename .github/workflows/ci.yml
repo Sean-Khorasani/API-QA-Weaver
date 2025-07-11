@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-node:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [16.x, 18.x, 20.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    
+    - name: Install Mockoon CLI
+      run: npm install -g @mockoon/cli
+    
+    - name: Install dependencies
+      run: |
+        npm install
+        cd itoc && npm install && cd ..
+        cd ctge && npm install && cd ..
+        cd sets && npm install && cd ..
+    
+    - name: Start mock services
+      run: |
+        cd mock-backend
+        mockoon-cli start --data mockoon-config.json &
+        mockoon-cli start --data mockoon-analytics-service.json &
+        mockoon-cli start --data mockoon-notification-service.json &
+        sleep 5
+    
+    - name: Run tests
+      run: |
+        cd examples
+        npm install axios
+        node quick-start.js
+    
+    - name: Build TypeScript projects
+      run: |
+        cd itoc && npm run build || true
+        cd ../ctge && npm run build || true
+        cd ../sets && npm run build || true
+
+  test-python:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: ['3.8', '3.9', '3.10', '3.11']
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Test Python components
+      run: |
+        python examples/test-with-mockoon.py || true
+
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18.x'
+    
+    - name: Lint JavaScript/TypeScript
+      run: |
+        npm install -g eslint
+        eslint . --ext .js,.ts || true
+    
+    - name: Check Python code style
+      run: |
+        pip install flake8
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics || true

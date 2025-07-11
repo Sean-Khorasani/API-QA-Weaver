@@ -1,0 +1,44 @@
+{
+  "name": "sets",
+  "version": "1.0.0",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs",
+    "example": "examples",
+    "test": "tests"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "demo": "ts-node examples/demo.ts",
+    "example-server": "node examples/sample-api/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@babel/parser": "^7.28.0",
+    "@babel/traverse": "^7.28.0",
+    "@babel/types": "^7.28.0",
+    "@types/axios": "^0.9.36",
+    "@types/babel__traverse": "^7.20.7",
+    "@types/chokidar": "^1.7.5",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.0.13",
+    "axios": "^1.10.0",
+    "chokidar": "^4.0.3",
+    "jest": "^30.0.4",
+    "nyc": "^17.1.0",
+    "openai": "^5.9.0",
+    "simple-git": "^3.28.0",
+    "ts-jest": "^29.4.0",
+    "typescript": "^5.8.3"
+  },
+  "devDependencies": {
+    "express": "^5.1.0",
+    "ts-node": "^10.9.2"
+  }
+}

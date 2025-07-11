@@ -1,0 +1,434 @@
+{
+  "uuid": "e5b3d8a0-6b2a-4d8b-8f3e-1a2b3c4d5e6f",
+  "lastMigration": 27,
+  "name": "Comprehensive Backend API",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3001,
+  "hostname": "0.0.0.0",
+  "routes": [
+    {
+      "uuid": "route-1",
+      "documentation": "User Authentication",
+      "method": "post",
+      "endpoint": "auth/login",
+      "responses": [
+        {
+          "uuid": "resp-1",
+          "body": "{\n  \"token\": \"{{faker 'datatype.uuid'}}\",\n  \"user\": {\n    \"id\": {{faker 'datatype.number' min=1 max=10000}},\n    \"username\": \"{{body 'username'}}\",\n    \"email\": \"{{faker 'internet.email'}}\",\n    \"role\": \"{{faker 'helpers.arrayElement' '[\"admin\", \"user\", \"moderator\"]'}}\"\n  },\n  \"expiresIn\": 3600\n}",
+          "latency": 100,
+          "statusCode": 200,
+          "label": "Success",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "filePath": "",
+          "sendFileAsBody": false,
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "username",
+              "value": ".*",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false
+        },
+        {
+          "uuid": "resp-1-error",
+          "body": "{\n  \"error\": \"Invalid credentials\",\n  \"code\": \"AUTH_FAILED\"\n}",
+          "latency": 50,
+          "statusCode": 401,
+          "label": "Failed Auth",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "rules": [],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    },
+    {
+      "uuid": "route-2",
+      "documentation": "Get User Profile",
+      "method": "get",
+      "endpoint": "users/:id",
+      "responses": [
+        {
+          "uuid": "resp-2",
+          "body": "{\n  \"id\": {{urlParam 'id'}},\n  \"username\": \"{{faker 'internet.userName'}}\",\n  \"email\": \"{{faker 'internet.email'}}\",\n  \"avatar\": \"{{faker 'image.avatar'}}\",\n  \"created\": \"{{faker 'date.past'}}\",\n  \"stats\": {\n    \"posts\": {{faker 'datatype.number' min=0 max=1000}},\n    \"followers\": {{faker 'datatype.number' min=0 max=10000}},\n    \"following\": {{faker 'datatype.number' min=0 max=1000}}\n  }\n}",
+          "latency": 50,
+          "statusCode": 200,
+          "label": "Success",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "rules": [],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    },
+    {
+      "uuid": "route-3",
+      "documentation": "Create Order",
+      "method": "post",
+      "endpoint": "orders",
+      "responses": [
+        {
+          "uuid": "resp-3",
+          "body": "{\n  \"orderId\": \"{{faker 'datatype.uuid'}}\",\n  \"status\": \"pending\",\n  \"items\": {{body 'items'}},\n  \"total\": {{faker 'commerce.price' min=10 max=1000}},\n  \"createdAt\": \"{{now}}\",\n  \"estimatedDelivery\": \"{{faker 'date.future'}}\"\n}",
+          "latency": 200,
+          "statusCode": 201,
+          "label": "Success",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Location",
+              "value": "/orders/{{faker 'datatype.uuid'}}"
+            }
+          ],
+          "rules": [],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    },
+    {
+      "uuid": "route-4",
+      "documentation": "Get Products List",
+      "method": "get",
+      "endpoint": "products",
+      "responses": [
+        {
+          "uuid": "resp-4",
+          "body": "{\n  \"products\": [\n    {{#repeat 10}}\n    {\n      \"id\": {{@index}},\n      \"name\": \"{{faker 'commerce.productName'}}\",\n      \"price\": {{faker 'commerce.price' min=10 max=500}},\n      \"category\": \"{{faker 'commerce.department'}}\",\n      \"inStock\": {{faker 'datatype.boolean'}},\n      \"rating\": {{faker 'datatype.float' min=1 max=5 precision=0.1}}\n    }{{#unless @last}},{{/unless}}\n    {{/repeat}}\n  ],\n  \"total\": 10,\n  \"page\": {{queryParam 'page' '1'}},\n  \"pageSize\": {{queryParam 'pageSize' '10'}}\n}",
+          "latency": 100,
+          "statusCode": 200,
+          "label": "Success",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "X-Total-Count",
+              "value": "100"
+            }
+          ],
+          "rules": [],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    },
+    {
+      "uuid": "route-5",
+      "documentation": "Process Payment",
+      "method": "post",
+      "endpoint": "payments/process",
+      "responses": [
+        {
+          "uuid": "resp-5-success",
+          "body": "{\n  \"transactionId\": \"{{faker 'datatype.uuid'}}\",\n  \"status\": \"completed\",\n  \"amount\": {{body 'amount'}},\n  \"currency\": \"{{body 'currency' 'USD'}}\",\n  \"processedAt\": \"{{now}}\"\n}",
+          "latency": 1500,
+          "statusCode": 200,
+          "label": "Success",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "rules": [
+            {
+              "target": "body",
+              "modifier": "amount",
+              "value": "^[0-9]+(\\.[0-9]{1,2})?$",
+              "invert": false,
+              "operator": "regex"
+            }
+          ],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false
+        },
+        {
+          "uuid": "resp-5-timeout",
+          "body": "{\n  \"error\": \"Payment gateway timeout\",\n  \"code\": \"PAYMENT_TIMEOUT\"\n}",
+          "latency": 5000,
+          "statusCode": 504,
+          "label": "Timeout",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "rules": [],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    },
+    {
+      "uuid": "route-6",
+      "documentation": "Search Items",
+      "method": "get",
+      "endpoint": "search",
+      "responses": [
+        {
+          "uuid": "resp-6",
+          "body": "{\n  \"results\": [\n    {{#repeat (faker 'datatype.number' min=0 max=20)}}\n    {\n      \"id\": \"{{faker 'datatype.uuid'}}\",\n      \"title\": \"{{faker 'lorem.sentence'}}\",\n      \"description\": \"{{faker 'lorem.paragraph'}}\",\n      \"type\": \"{{faker 'helpers.arrayElement' '[\"product\", \"article\", \"user\", \"post\"]'}}\",\n      \"score\": {{faker 'datatype.float' min=0 max=1 precision=0.01}}\n    }{{#unless @last}},{{/unless}}\n    {{/repeat}}\n  ],\n  \"query\": \"{{queryParam 'q'}}\",\n  \"totalResults\": {{faker 'datatype.number' min=0 max=1000}},\n  \"processingTime\": {{faker 'datatype.number' min=10 max=200}}\n}",
+          "latency": 300,
+          "statusCode": 200,
+          "label": "Success",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "rules": [],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    },
+    {
+      "uuid": "route-7",
+      "documentation": "Update Resource",
+      "method": "put",
+      "endpoint": "resources/:id",
+      "responses": [
+        {
+          "uuid": "resp-7",
+          "body": "{\n  \"id\": {{urlParam 'id'}},\n  \"updated\": true,\n  \"timestamp\": \"{{now}}\",\n  \"version\": {{faker 'datatype.number' min=1 max=10}}\n}",
+          "latency": 150,
+          "statusCode": 200,
+          "label": "Success",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "rules": [],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    },
+    {
+      "uuid": "route-8",
+      "documentation": "Delete Resource",
+      "method": "delete",
+      "endpoint": "resources/:id",
+      "responses": [
+        {
+          "uuid": "resp-8",
+          "body": "",
+          "latency": 100,
+          "statusCode": 204,
+          "label": "Success",
+          "headers": [],
+          "rules": [],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    },
+    {
+      "uuid": "route-9",
+      "documentation": "Health Check",
+      "method": "get",
+      "endpoint": "health",
+      "responses": [
+        {
+          "uuid": "resp-9",
+          "body": "{\n  \"status\": \"healthy\",\n  \"uptime\": {{faker 'datatype.number' min=1000 max=100000}},\n  \"version\": \"1.0.0\",\n  \"services\": {\n    \"database\": \"connected\",\n    \"cache\": \"connected\",\n    \"queue\": \"connected\"\n  }\n}",
+          "latency": 10,
+          "statusCode": 200,
+          "label": "Healthy",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "rules": [],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    },
+    {
+      "uuid": "route-10",
+      "documentation": "Batch Operations",
+      "method": "post",
+      "endpoint": "batch",
+      "responses": [
+        {
+          "uuid": "resp-10",
+          "body": "{\n  \"batchId\": \"{{faker 'datatype.uuid'}}\",\n  \"status\": \"processing\",\n  \"totalItems\": {{body 'items.length' '0'}},\n  \"processed\": 0,\n  \"failed\": 0,\n  \"estimatedCompletion\": \"{{faker 'date.future'}}\"\n}",
+          "latency": 500,
+          "statusCode": 202,
+          "label": "Accepted",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Location",
+              "value": "/batch/{{faker 'datatype.uuid'}}/status"
+            }
+          ],
+          "rules": [],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    },
+    {
+      "uuid": "route-11",
+      "documentation": "Rate Limited Endpoint",
+      "method": "get",
+      "endpoint": "limited",
+      "responses": [
+        {
+          "uuid": "resp-11-success",
+          "body": "{\n  \"data\": \"Success\",\n  \"remaining\": {{faker 'datatype.number' min=0 max=100}}\n}",
+          "latency": 50,
+          "statusCode": 200,
+          "label": "Success",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "X-RateLimit-Limit",
+              "value": "100"
+            },
+            {
+              "key": "X-RateLimit-Remaining",
+              "value": "{{faker 'datatype.number' min=0 max=100}}"
+            }
+          ],
+          "rules": [],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": false
+        },
+        {
+          "uuid": "resp-11-limited",
+          "body": "{\n  \"error\": \"Rate limit exceeded\",\n  \"retryAfter\": 60\n}",
+          "latency": 0,
+          "statusCode": 429,
+          "label": "Rate Limited",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "key": "Retry-After",
+              "value": "60"
+            }
+          ],
+          "rules": [],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": "RANDOM"
+    }
+  ],
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    },
+    {
+      "key": "X-API-Version",
+      "value": "1.0"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "data": []
+}

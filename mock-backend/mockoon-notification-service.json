@@ -1,0 +1,119 @@
+{
+  "uuid": "notification-service",
+  "lastMigration": 27,
+  "name": "Notification Microservice",
+  "endpointPrefix": "",
+  "latency": 0,
+  "port": 3003,
+  "hostname": "0.0.0.0",
+  "routes": [
+    {
+      "uuid": "notif-1",
+      "documentation": "Send Notification",
+      "method": "post",
+      "endpoint": "notifications/send",
+      "responses": [
+        {
+          "uuid": "resp-notif-1",
+          "body": "{\n  \"notificationId\": \"{{faker 'datatype.uuid'}}\",\n  \"status\": \"queued\",\n  \"channels\": {{body 'channels'}},\n  \"scheduledAt\": \"{{now}}\",\n  \"estimatedDelivery\": \"{{faker 'date.soon'}}\"\n}",
+          "latency": 100,
+          "statusCode": 202,
+          "label": "Success",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "rules": [],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    },
+    {
+      "uuid": "notif-2",
+      "documentation": "WebSocket Events",
+      "method": "get",
+      "endpoint": "ws",
+      "responses": [
+        {
+          "uuid": "resp-notif-2",
+          "body": "WebSocket endpoint - connect to ws://localhost:3003/ws",
+          "latency": 0,
+          "statusCode": 101,
+          "label": "WebSocket",
+          "headers": [
+            {
+              "key": "Upgrade",
+              "value": "websocket"
+            },
+            {
+              "key": "Connection",
+              "value": "Upgrade"
+            }
+          ],
+          "rules": [],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    },
+    {
+      "uuid": "notif-3",
+      "documentation": "Get Notification Status",
+      "method": "get",
+      "endpoint": "notifications/:id/status",
+      "responses": [
+        {
+          "uuid": "resp-notif-3",
+          "body": "{\n  \"notificationId\": \"{{urlParam 'id'}}\",\n  \"status\": \"{{faker 'helpers.arrayElement' '[\"queued\", \"sending\", \"delivered\", \"failed\", \"bounced\"]'}}\",\n  \"attempts\": {{faker 'datatype.number' min=1 max=3}},\n  \"lastAttempt\": \"{{faker 'date.recent'}}\",\n  \"deliveryDetails\": {\n    \"email\": {\n      \"status\": \"{{faker 'helpers.arrayElement' '[\"delivered\", \"opened\", \"clicked\"]'}}\",\n      \"timestamp\": \"{{faker 'date.recent'}}\"\n    },\n    \"sms\": {\n      \"status\": \"{{faker 'helpers.arrayElement' '[\"delivered\", \"failed\"]'}}\",\n      \"timestamp\": \"{{faker 'date.recent'}}\"\n    },\n    \"push\": {\n      \"status\": \"{{faker 'helpers.arrayElement' '[\"delivered\", \"failed\", \"pending\"]'}}\",\n      \"timestamp\": \"{{faker 'date.recent'}}\"\n    }\n  }\n}",
+          "latency": 50,
+          "statusCode": 200,
+          "label": "Success",
+          "headers": [
+            {
+              "key": "Content-Type",
+              "value": "application/json"
+            }
+          ],
+          "rules": [],
+          "rulesOperator": "AND",
+          "disableTemplating": false,
+          "fallbackTo404": false,
+          "default": true
+        }
+      ],
+      "enabled": true,
+      "responseMode": null
+    }
+  ],
+  "cors": true,
+  "headers": [
+    {
+      "key": "Content-Type",
+      "value": "application/json"
+    }
+  ],
+  "proxyMode": false,
+  "proxyHost": "",
+  "proxyRemovePrefix": false,
+  "tlsOptions": {
+    "enabled": false,
+    "type": "CERT",
+    "pfxPath": "",
+    "certPath": "",
+    "keyPath": "",
+    "caPath": "",
+    "passphrase": ""
+  },
+  "data": []
+}

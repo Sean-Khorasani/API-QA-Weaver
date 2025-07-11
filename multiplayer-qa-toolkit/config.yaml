@@ -1,0 +1,138 @@
+# Epic Games Multiplayer QA Toolkit Configuration
+# Global configuration for all testing tools
+
+# General Testing Configuration
+testing:
+  default_duration: 300  # seconds
+  metric_interval: 1.0   # seconds
+  log_level: INFO
+  result_dir: ./results
+  enable_real_time_monitoring: true
+  
+# Network Testing Configuration  
+network:
+  max_latency: 500      # ms
+  max_packet_loss: 0.1  # 10%
+  max_jitter: 100       # ms
+  bandwidth_limits:
+    min: 1             # Mbps
+    max: 1000          # Mbps
+  packet_size_limits:
+    min: 64            # bytes
+    max: 1500          # bytes (MTU)
+    
+# Game Server Configuration
+game_server:
+  tick_rate: 60         # Hz
+  max_players_per_server: 100
+  regions:
+    - name: NA-EAST
+      endpoint: us-east-1.game.com
+      capacity: 10000
+    - name: EU-WEST
+      endpoint: eu-west-1.game.com
+      capacity: 8000
+    - name: ASIA-PACIFIC
+      endpoint: ap-southeast-1.game.com
+      capacity: 12000
+      
+# API Configuration
+api:
+  base_url: http://api.game.com
+  timeout: 30           # seconds
+  retry_count: 3
+  retry_delay: 1        # seconds
+  rate_limit: 10000     # requests per second
+  connection_pool_size: 100
+  
+# Load Testing Configuration
+load_testing:
+  warm_up_time: 60      # seconds
+  cool_down_time: 30    # seconds
+  user_think_time:
+    min: 0.5           # seconds
+    max: 2.0           # seconds
+  virtual_user_limits:
+    min: 1
+    max: 1000000
+    
+# Prediction Testing Configuration
+prediction:
+  physics_tick_rate: 60  # Hz
+  max_rollback_frames: 10
+  interpolation_delay: 100  # ms
+  extrapolation_limit: 200  # ms
+  position_tolerance: 0.1   # units
+  
+# Lag Compensation Configuration
+lag_compensation:
+  history_duration: 1.0     # seconds
+  max_rewind_time: 0.5      # seconds
+  hit_box_padding: 0.05     # units
+  interpolation_samples: 3
+  
+# Chaos Testing Configuration
+chaos:
+  max_experiment_duration: 3600  # seconds
+  failure_injection_probability: 0.1
+  recovery_timeout: 300          # seconds
+  blast_radius_calculation: true
+  service_dependencies:
+    auth: [database, cache]
+    matchmaking: [auth, game-servers, player-data]
+    game-servers: [player-data, telemetry]
+    
+# Monitoring and Alerting
+monitoring:
+  metrics_export_interval: 10    # seconds
+  alert_thresholds:
+    error_rate: 0.01            # 1%
+    p99_latency: 1000           # ms
+    cpu_usage: 80               # %
+    memory_usage: 90            # %
+  export_formats:
+    - json
+    - csv
+    - prometheus
+    
+# Tournament Mode Configuration
+tournament:
+  strict_fairness: true
+  max_latency_difference: 50     # ms
+  required_tick_rate: 128        # Hz
+  disable_lag_compensation: false
+  enhanced_anti_cheat: true
+  
+# Reporting Configuration
+reporting:
+  output_formats:
+    - json
+    - csv
+    - html
+    - pdf
+  include_graphs: true
+  graph_resolution: 300          # DPI
+  max_data_points: 10000
+  summary_percentiles: [50, 90, 95, 99, 99.9]
+  
+# Development and Debug Configuration
+debug:
+  enable_packet_capture: false
+  save_raw_data: false
+  verbose_logging: false
+  profile_performance: false
+  mock_services: false
+  
+# Security Configuration
+security:
+  encrypt_sensitive_data: true
+  redact_player_info: true
+  api_key_env_var: GAME_API_KEY
+  ssl_verify: true
+  
+# Resource Limits
+resource_limits:
+  max_memory_usage: 16384        # MB
+  max_cpu_cores: 32
+  max_open_files: 10000
+  max_threads: 1000

@@ -1,0 +1,244 @@
+# SETS - Self-Evolving Test Suite
+
+SETS is an AI-powered testing framework that automatically maintains and evolves your API test suite as your code changes. It monitors your codebase, detects API changes, and updates tests accordingly to maintain target coverage.
+
+## Features
+
+- **Automatic Test Generation**: Creates tests for new API endpoints automatically
+- **Test Evolution**: Updates existing tests when endpoints change
+- **Obsolete Test Removal**: Removes tests for deleted endpoints
+- **Coverage Maintenance**: Generates additional tests to meet coverage targets
+- **Multi-Language Support**: Analyzes JavaScript, TypeScript, and Python code
+- **Git Integration**: Optionally commits test changes automatically
+- **AI Enhancement**: Uses OpenAI to generate smarter, more comprehensive tests
+
+## Installation
+
+```bash
+npm install
+npm run build
+```
+
+## Quick Start
+
+```typescript
+import { SelfEvolvingTestSuite, EvolutionConfig } from './src';
+
+const config: EvolutionConfig = {
+  watchPaths: ['./src'],          // Directories to watch for changes
+  testPaths: ['./tests'],         // Where to save generated tests
+  updateThreshold: 10,            // Update tests if >10% code change
+  coverageTarget: 80,             // Target 80% test coverage
+  aiEnabled: true,                // Use AI for test generation
+  openaiApiKey: 'your-key',       // OpenAI API key
+  gitEnabled: true                // Auto-commit test changes
+};
+
+const sets = new SelfEvolvingTestSuite(config);
+await sets.initialize();
+
+// SETS now watches your code and evolves tests automatically!
+```
+
+## How It Works
+
+### 1. Code Analysis
+SETS continuously analyzes your codebase to detect:
+- New API endpoints
+- Modified endpoints
+- Deleted endpoints
+- Schema changes
+- Validation logic changes
+
+### 2. Test Evolution
+Based on detected changes, SETS:
+- **Adds** tests for new endpoints
+- **Updates** tests for modified endpoints
+- **Removes** tests for deleted endpoints
+- **Enhances** tests to improve coverage
+
+### 3. Test Generation
+SETS generates comprehensive tests including:
+- Happy path scenarios
+- Edge cases (invalid input, not found, etc.)
+- Authorization tests
+- Performance assertions
+- Error handling
+
+### 4. Coverage Tracking
+SETS monitors test coverage and:
+- Identifies untested endpoints
+- Generates tests for uncovered code
+- Reports coverage improvements
+
+## Example
+
+### Initial API Code
+```javascript
+// api.js
+app.get('/api/users', (req, res) => {
+  res.json({ users: [] });
+});
+```
+
+### SETS Generates Test
+```javascript
+describe('Test GET /api/users', () => {
+  test('GET /api/users', async () => {
+    const response = await axios.get(`${baseURL}/api/users`);
+    expect(response.status).toBe(200);
+    expect(typeof response.data).toBe('object');
+    expect(response.data.users).toBeDefined();
+  });
+  
+  // Edge cases automatically added
+  test('GET /api/users - Unauthorized', async () => {
+    // ... authorization test
+  });
+});
+```
+
+### API Code Changes
+```javascript
+// api.js - Added validation
+app.post('/api/users', (req, res) => {
+  if (!req.body.email) {
+    return res.status(400).json({ error: 'Email required' });
+  }
+  res.status(201).json({ id: 1 });
+});
+```
+
+### SETS Updates Tests
+```javascript
+// Automatically adds new test
+test('POST /api/users', async () => {
+  const response = await axios.post(`${baseURL}/api/users`, {
+    email: 'test@example.com'
+  });
+  expect(response.status).toBe(201);
+  expect(response.data.id).toBeDefined();
+});
+
+test('POST /api/users - Invalid Input', async () => {
+  try {
+    await axios.post(`${baseURL}/api/users`, {});
+  } catch (error) {
+    expect(error.response.status).toBe(400);
+    expect(error.response.data.error).toBe('Email required');
+  }
+});
+```
+
+## Configuration Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `watchPaths` | string[] | required | Directories to monitor for code changes |
+| `testPaths` | string[] | required | Where to save generated test files |
+| `updateThreshold` | number | 10 | Percentage of change before updating tests |
+| `coverageTarget` | number | 80 | Target test coverage percentage |
+| `aiEnabled` | boolean | false | Use AI for enhanced test generation |
+| `openaiApiKey` | string | - | OpenAI API key (required if aiEnabled) |
+| `gitEnabled` | boolean | false | Automatically commit test changes |
+
+## Running the Demo
+
+```bash
+# Start the sample API server
+npm run example-server
+
+# In another terminal, run the demo
+npm run demo
+```
+
+The demo will:
+1. Generate initial tests for existing endpoints
+2. Simulate adding new endpoints
+3. Simulate modifying endpoints
+4. Simulate removing endpoints
+5. Show how tests evolve with each change
+
+## Metrics and Monitoring
+
+```typescript
+const metrics = sets.getMetrics();
+console.log(`Total tests: ${metrics.totalTests}`);
+console.log(`Auto-generated: ${metrics.autoGeneratedTests}`);
+console.log(`Coverage: ${metrics.coverage}%`);
+console.log(`Last evolution: ${metrics.lastEvolution}`);
+```
+
+## Evolution History
+
+SETS maintains a history of all test evolution:
+
+```json
+{
+  "version": "2024.1.11.1",
+  "timestamp": "2024-01-11T10:30:00Z",
+  "changes": [
+    {
+      "type": "added",
+      "testId": "test_post_users_123",
+      "reason": "New endpoint detected: POST /api/users"
+    }
+  ],
+  "coverage": {
+    "before": 75,
+    "after": 82
+  }
+}
+```
+
+## Best Practices
+
+1. **Start with Good Coverage**: SETS works best when you have initial tests
+2. **Use Meaningful Endpoint Names**: Helps SETS generate better test names
+3. **Enable AI for Complex APIs**: AI generates more sophisticated test scenarios
+4. **Review Generated Tests**: While automatic, periodic review ensures quality
+5. **Commit Regularly**: If using git integration, ensure clean commits
+
+## Testing
+
+```bash
+# Run tests
+npm test
+
+# Watch mode
+npm run test:watch
+
+# Coverage report
+npm run test:coverage
+```
+
+## Architecture
+
+```
+sets/
+├── src/
+│   ├── SelfEvolvingTestSuite.ts  # Main orchestrator
+│   ├── CodeAnalyzer.ts           # Analyzes code for API endpoints
+│   ├── TestEvolver.ts            # Manages test evolution logic
+│   ├── TestGenerator.ts          # Generates test code
+│   └── types.ts                  # TypeScript interfaces
+├── tests/                        # Unit tests
+├── examples/                     # Demo and examples
+└── docs/                        # Additional documentation
+```
+
+## Limitations
+
+- Currently supports Express.js, Flask, and decorator-based frameworks
+- Test execution requires external test runner (Jest, pytest, etc.)
+- Coverage calculation is simplified (not using actual code coverage tools)
+- Git integration is basic (commits all changes together)
+
+## Future Enhancements
+
+- Support for more frameworks (Fastify, Koa, Django, Spring)
+- Integration with actual coverage tools (Istanbul, Coverage.py)
+- Smarter test organization and naming
+- Visual dashboard for monitoring evolution
+- Support for GraphQL and gRPC APIs
+- Integration with CI/CD pipelines

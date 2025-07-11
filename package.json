@@ -1,0 +1,46 @@
+{
+  "name": "api-qa-weaver",
+  "version": "1.0.0",
+  "description": "AI-powered API testing toolkit featuring intelligent test generation, contract learning, and self-evolving test suites",
+  "main": "index.js",
+  "scripts": {
+    "install:all": "npm install && cd itoc && npm install && cd ../ctge && npm install && cd ../sets && npm install",
+    "build": "npm run build:itoc && npm run build:ctge && npm run build:sets",
+    "build:itoc": "cd itoc && npm run build",
+    "build:ctge": "cd ctge && npm run build",
+    "build:sets": "cd sets && npm run build",
+    "test": "npm run test:itoc && npm run test:ctge && npm run test:sets",
+    "test:itoc": "cd itoc && npm test",
+    "test:ctge": "cd ctge && npm test",
+    "test:sets": "cd sets && npm test",
+    "demo": "npm run demo:mockoon && npm run demo:itoc",
+    "demo:mockoon": "cd examples && node test-with-mockoon.js",
+    "demo:itoc": "cd itoc && npm run demo",
+    "start:mock": "cd mock-backend && ./start-mock-services.sh",
+    "clean": "rm -rf node_modules */node_modules */dist */build"
+  },
+  "keywords": [
+    "api",
+    "testing",
+    "qa",
+    "ai",
+    "automation",
+    "test-generation",
+    "contract-testing",
+    "mockoon"
+  ],
+  "author": "API-QA-Weaver Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sean-Khorasani/API-QA-Weaver.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Sean-Khorasani/API-QA-Weaver/issues"
+  },
+  "homepage": "https://github.com/Sean-Khorasani/API-QA-Weaver#readme",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  }
+}

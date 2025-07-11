@@ -1,0 +1,169 @@
+version: '3.8'
+
+services:
+  # Network Simulator Service
+  network-simulator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: epic-network-sim
+    command: python network-simulator/network_simulator.py
+    volumes:
+      - ./results:/app/results
+      - ./config.yaml:/app/config.yaml:ro
+    networks:
+      - qa-network
+    cap_add:
+      - NET_ADMIN  # Required for network simulation
+      
+  # Prediction Tester Service
+  prediction-tester:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: epic-prediction-test
+    command: python prediction-tester/prediction_tester.py
+    volumes:
+      - ./results:/app/results
+      - ./config.yaml:/app/config.yaml:ro
+    networks:
+      - qa-network
+      
+  # Lag Compensation Tester
+  lag-compensation:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: epic-lag-comp
+    command: python lag-compensation/lag_compensation_tester.py
+    volumes:
+      - ./results:/app/results
+      - ./config.yaml:/app/config.yaml:ro
+    networks:
+      - qa-network
+      
+  # API Load Tester with Web Dashboard
+  api-loadtest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: epic-load-test
+    command: python api-loadtest/api_loadtest.py --dashboard
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./results:/app/results
+      - ./config.yaml:/app/config.yaml:ro
+    networks:
+      - qa-network
+    environment:
+      - LOAD_TEST_TARGET_URL=${LOAD_TEST_TARGET_URL:-http://api.game.com}
+      
+  # Packet Analyzer with Web UI
+  packet-analyzer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: epic-packet-analyzer
+    command: python packet-analyzer/packet_analyzer.py --web-ui
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./results:/app/results
+      - ./config.yaml:/app/config.yaml:ro
+    networks:
+      - qa-network
+    cap_add:
+      - NET_RAW  # Required for packet capture
+      
+  # Chaos Testing Orchestrator
+  chaos-testing:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: epic-chaos-test
+    command: python chaos-testing/chaos_testing.py --control-panel
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./results:/app/results
+      - ./config.yaml:/app/config.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock  # For Docker chaos
+    networks:
+      - qa-network
+    environment:
+      - CHAOS_TESTING_MODE=${CHAOS_TESTING_MODE:-safe}
+      
+  # Integrated Test Suite Runner
+  integrated-suite:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: epic-integrated-tests
+    command: python integration/integrated_test_suite.py
+    volumes:
+      - ./results:/app/results
+      - ./config.yaml:/app/config.yaml:ro
+    networks:
+      - qa-network
+    depends_on:
+      - network-simulator
+      - prediction-tester
+      - lag-compensation
+      - api-loadtest
+      
+  # Metrics Collector (Prometheus)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: epic-prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    networks:
+      - qa-network
+      
+  # Visualization (Grafana)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: epic-grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    ports:
+      - "3000:3000"
+    networks:
+      - qa-network
+    depends_on:
+      - prometheus
+      
+  # Redis for distributed testing
+  redis:
+    image: redis:7-alpine
+    container_name: epic-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - qa-network
+    volumes:
+      - redis_data:/data
+      
+networks:
+  qa-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+          
+volumes:
+  prometheus_data:
+  grafana_data:
+  redis_data:
